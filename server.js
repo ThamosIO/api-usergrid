@@ -1,14 +1,15 @@
 import koa from 'koa';
 import bodyParser from 'koa-bodyparser';
-import responseTime from 'koa-response-time';
+import cors from 'koa-cors';
 import session from 'koa-generic-session';
+import responseTime from 'koa-response-time';
 import MongooseStore from 'koa-session-mongoose';
 import mongoose from 'mongoose';
 import reqtree from 'require-tree';
-import cors from 'koa-cors';
+import logger from 'winston';
 
-import settings from './settings.json';
 import requireLogin from './lib/middleware/require-login';
+import settings from './settings.json';
 
 const path = [`mongodb://${settings.server.host}/${settings.server.db}`].join('');
 
@@ -28,7 +29,7 @@ export default class Server {
         const start = new Date();
         yield next;
         const ms = new Date() - start;
-        console.log(`[${this.response.status}] | ${this.method} ${this.url} - ${ms}`);
+        logger.info(`[${this.response.status}] | ${this.method} ${this.url} - ${ms}`);
       })
       .use(bodyParser())
       .use(cors());
