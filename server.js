@@ -1,13 +1,12 @@
-import koa from 'koa';
+import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
-import cors from 'koa-cors';
 import session from 'koa-generic-session';
-import responseTime from 'koa-response-time';
 import MongooseStore from 'koa-session-mongoose';
 import mongoose from 'mongoose';
 import reqtree from 'require-tree';
 import logger from 'winston';
 
+import cors from '../forks/koa-cors/';
 import requireLogin from './lib/middleware/require-login';
 import settings from './settings.json';
 
@@ -19,17 +18,17 @@ export default class Server {
   constructor(hostname, port) {
     this.hostname = hostname;
     this.port = port;
-    this.app = koa();
+    this.app = new Koa();
   }
 
   mountMiddleware() {
     this.app
-      .use(responseTime())
-      .use(function* requestDuration(next) {
+      .use(async (ctx, next) => {
         const start = new Date();
-        yield next;
+        await next();
         const ms = new Date() - start;
-        logger.info(`[${this.response.status}] | ${this.method} ${this.url} - ${ms}`);
+
+        logger.info(`[${ctx.status}] | ${ctx.method} ${ctx.url} - ${ms}`);
       })
       .use(bodyParser())
       .use(cors());
