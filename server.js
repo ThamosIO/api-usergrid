@@ -4,10 +4,9 @@ import session from 'koa-generic-session';
 import MongooseStore from 'koa-session-mongoose';
 import mongoose from 'mongoose';
 import reqtree from 'require-tree';
-import logger from 'winston';
+import cors from 'koa-cors';
 
-import cors from '../forks/koa-cors/';
-import requireLogin from './lib/middleware/require-login';
+import { responseTime, requireLogin } from './lib/middleware';
 import settings from './settings.json';
 
 const path = [`mongodb://${settings.server.host}/${settings.server.db}`].join('');
@@ -23,13 +22,7 @@ export default class Server {
 
   mountMiddleware() {
     this.app
-      .use(async (ctx, next) => {
-        const start = new Date();
-        await next();
-        const ms = new Date() - start;
-
-        logger.info(`[${ctx.status}] | ${ctx.method} ${ctx.url} - ${ms}`);
-      })
+      .use(responseTime)
       .use(bodyParser())
       .use(cors());
 
